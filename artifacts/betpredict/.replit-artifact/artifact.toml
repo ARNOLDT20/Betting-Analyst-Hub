@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "BetPredict Pro"
+version = "1.0.0"
+id = "artifacts/betpredict"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21765
+
+[services.development]
+run = "pnpm --filter @workspace/betpredict run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/betpredict", "run", "build" ]
+publicDir = "artifacts/betpredict/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21765"
+BASE_PATH = "/"
