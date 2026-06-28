@@ -1,6 +1,6 @@
 import { db } from "@workspace/db";
 import { matchesTable, leaguesTable } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { ne, like } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import {
   fetchMatches,
@@ -43,19 +43,30 @@ export async function syncAllCompetitions(): Promise<{ synced: number; errors: s
   try {
     await ensureLeagues();
 
-    const today = new Date();
-    const past = new Date(today); past.setDate(past.getDate() - 7);
-    const future = new Date(today); future.setDate(future.getDate() + 30);
-    const dateFrom = past.toISOString().slice(0, 10);
-    const dateTo = future.toISOString().slice(0, 10);
+    // Purge any finished matches so only real upcoming/live ones remain
+    await db.delete(matchesTable).where(ne(matchesTable.status, "upcoming"));
+    // Also purge seeded fake data (non fd- prefixed)
+    const allMatches = await db.select({ id: matchesTable.id }).from(matchesTable);
+    for (const m of allMatches) {
+      if (!m.id.startsWith("fd-")) {
+        await db.delete(matchesTable).where(ne(matchesTable.id, "_"));
+        break;
+      }
+    }
 
-    logger.info({ dateFrom, dateTo }, "Sync date range");
+    // Date range: today → 45 days out (covers World Cup final July 19 + buffer)
+    const today = new Date();
+    const dateTo = new Date(today);
+    dateTo.setDate(dateTo.getDate() + 45);
+    const dateFrom = today.toISOString().slice(0, 10);
+    const dateToStr = dateTo.toISOString().slice(0, 10);
+
+    logger.info({ dateFrom, dateTo: dateToStr }, "Sync date range");
 
     for (const code of ALL_COMPETITION_CODES) {
       try {
-        // Fetch matches first, rate-limit pause, then standings
         logger.info({ code }, "Fetching matches");
-        const matches = await fetchMatches(code, dateFrom, dateTo);
+        const matches = await fetchMatches(code, dateFrom, dateToStr);
         await sleep(RATE_DELAY_MS);
 
         let standings: FDStanding[] = [];
@@ -109,11 +120,16 @@ async function processMatches(
   const standingMap = new Map<number, FDStanding>();
   for (const s of standings) standingMap.set(s.team.id, s);
 
-  const leagueAvgGoalsFor = avgStat(standings, s => s.playedGames > 0 ? s.goalsFor / s.playedGames : 0) || 1.3;
-  const leagueAvgGoalsAgainst = avgStat(standings, s => s.playedGames > 0 ? s.goalsAgainst / s.playedGames : 0) || 1.3;
+  const leagueAvgGoalsFor =
+    avgStat(standings, s => (s.playedGames > 0 ? s.goalsFor / s.playedGames : 0)) || 1.3;
+  const leagueAvgGoalsAgainst =
+    avgStat(standings, s => (s.playedGames > 0 ? s.goalsAgainst / s.playedGames : 0)) || 1.3;
 
   let count = 0;
   for (const m of matches) {
+    // Skip if either team is TBD / null (should already be filtered, but double-check)
+    if (!m.homeTeam?.name || !m.awayTeam?.name) continue;
+
     try {
       await upsertMatch(m, code, meta, standingMap, leagueAvgGoalsFor, leagueAvgGoalsAgainst);
       count++;
@@ -134,6 +150,10 @@ async function upsertMatch(
 ) {
   const matchId = `fd-${m.id}`;
   const status = normStatus(m.status);
+
+  // Only store upcoming or live matches
+  if (status === "finished") return;
+
   const dt = new Date(m.utcDate);
   const matchDate = dt.toISOString().slice(0, 10);
   const matchTime = dt.toLocaleTimeString("en-GB", {
@@ -143,12 +163,22 @@ async function upsertMatch(
   const homeStanding = standingMap.get(m.homeTeam.id);
   const awayStanding = standingMap.get(m.awayTeam.id);
 
-  const homeStats = buildTeamStats(homeStanding, leagueAvgGoalsFor, leagueAvgGoalsAgainst, [], m.homeTeam.id, true);
-  const awayStats = buildTeamStats(awayStanding, leagueAvgGoalsFor, leagueAvgGoalsAgainst, [], m.awayTeam.id, false);
+  // World Cup: use international tournament averages if no standings available
+  const isWorldCup = competitionCode === "WC";
+  const defaultAvg = isWorldCup ? 1.45 : 1.3;
+  const effectiveAvgFor = leagueAvgGoalsFor || defaultAvg;
+  const effectiveAvgAgainst = leagueAvgGoalsAgainst || defaultAvg;
+
+  const homeStats = buildTeamStats(
+    homeStanding, effectiveAvgFor, effectiveAvgAgainst, [], m.homeTeam.id, true
+  );
+  const awayStats = buildTeamStats(
+    awayStanding, effectiveAvgFor, effectiveAvgAgainst, [], m.awayTeam.id, false
+  );
 
   const { lambdaHome, lambdaAway } = calcExpectedGoals(
-    homeStats.attackStrength, awayStats.defenceStrength, leagueAvgGoalsFor,
-    awayStats.attackStrength, homeStats.defenceStrength, leagueAvgGoalsAgainst,
+    homeStats.attackStrength, awayStats.defenceStrength, effectiveAvgFor,
+    awayStats.attackStrength, homeStats.defenceStrength, effectiveAvgAgainst,
   );
 
   const probs = poissonMatchProbs(lambdaHome, lambdaAway);
@@ -161,22 +191,24 @@ async function upsertMatch(
     prediction === "home" ? homeWinOdds :
     prediction === "away" ? awayWinOdds :
     prediction === "draw" ? drawOdds :
-    prediction === "btts" ? Math.max(1.01, (1 / Math.max(0.01, probs.btts)) / 1.08) :
-    Math.max(1.01, (1 / Math.max(0.01, probs.over25)) / 1.08);
+    prediction === "btts" ? Math.max(1.01, 1 / Math.max(0.01, probs.btts) / 1.08) :
+    Math.max(1.01, 1 / Math.max(0.01, probs.over25) / 1.08);
 
   const valueRating = calcValueRating(confidence, predOdds);
-  const isHot = valueRating >= 7.0 && confidence >= 0.55;
+  const isHot = valueRating >= 7.5;
+
+  // Add stage/group context for World Cup matches
+  const stageNote = isWorldCup && m.stage
+    ? `${m.stage.replace(/_/g, " ")}${m.group ? ` · ${m.group.replace("GROUP_", "Group ")}` : ""}`
+    : null;
 
   const analysisNotes = buildAnalysisNotes(
     m.homeTeam.shortName || m.homeTeam.name,
     m.awayTeam.shortName || m.awayTeam.name,
     homeStats, awayStats, probs,
     { lambdaHome, lambdaAway },
+    stageNote,
   );
-
-  const formStr = (form: string | null) => (form ?? "NNNNN").split("").map(c =>
-    c === "W" ? "W" : c === "D" ? "D" : c === "L" ? "L" : "N"
-  ).join("");
 
   await db.insert(matchesTable).values({
     id: matchId,
@@ -191,8 +223,8 @@ async function upsertMatch(
     matchDate,
     matchTime,
     status,
-    homeScore: m.score.fullTime.home ?? null,
-    awayScore: m.score.fullTime.away ?? null,
+    homeScore: null,
+    awayScore: null,
     homeWinOdds,
     drawOdds,
     awayWinOdds,
@@ -201,8 +233,8 @@ async function upsertMatch(
     predictionLabel,
     valueRating,
     isHot,
-    homeTeamForm: homeStats.form || formStr(homeStanding?.form ?? null),
-    awayTeamForm: awayStats.form || formStr(awayStanding?.form ?? null),
+    homeTeamForm: homeStats.form,
+    awayTeamForm: awayStats.form,
     homeRecentGoalsScored: homeStats.recentGoalsScored,
     homeRecentGoalsConceded: homeStats.recentGoalsConceded,
     awayRecentGoalsScored: awayStats.recentGoalsScored,
@@ -222,8 +254,8 @@ async function upsertMatch(
     target: matchesTable.id,
     set: {
       status,
-      homeScore: m.score.fullTime.home ?? null,
-      awayScore: m.score.fullTime.away ?? null,
+      homeScore: null,
+      awayScore: null,
       homeWinOdds,
       drawOdds,
       awayWinOdds,
@@ -232,8 +264,6 @@ async function upsertMatch(
       predictionLabel,
       valueRating,
       isHot,
-      homeTeamForm: homeStats.form,
-      awayTeamForm: awayStats.form,
       homeWinProbability: probs.homeWin,
       drawProbability: probs.draw,
       awayWinProbability: probs.awayWin,

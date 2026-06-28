@@ -1,0 +1,1 @@
+- [Football-data.org sync quirks](football-data-sync.md) — rate limits, WC group standings merge, off-season gaps, and isHot formula fix.

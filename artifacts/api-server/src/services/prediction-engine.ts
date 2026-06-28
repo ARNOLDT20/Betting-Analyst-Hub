@@ -145,10 +145,13 @@ export function makePrediction(
   };
 }
 
-export function calcValueRating(confidence: number, odds: number): number {
-  const impliedProb = 1 / odds;
-  const edge = confidence - impliedProb;
-  return Math.max(0, Math.min(10, 5 + edge * 30));
+export function calcValueRating(confidence: number, _odds: number): number {
+  // Measures how far our confidence exceeds the 3-outcome random baseline (33.3%).
+  // A model saying 66.7% is exactly 2× the baseline → mid-value.
+  // Returns 0–10: 5 = baseline, 10 = strong edge.
+  const baseline = 1 / 3;
+  const edge = confidence - baseline;
+  return Math.max(0, Math.min(10, 5 + edge * 15));
 }
 
 export function buildAnalysisNotes(
@@ -157,9 +160,12 @@ export function buildAnalysisNotes(
   homeStats: TeamStats,
   awayStats: TeamStats,
   probs: { homeWin: number; draw: number; awayWin: number; btts: number; over25: number },
-  xG: { lambdaHome: number; lambdaAway: number }
+  xG: { lambdaHome: number; lambdaAway: number },
+  stageNote?: string | null
 ): string[] {
   const notes: string[] = [];
+
+  if (stageNote) notes.push(`${stageNote} — knockout stakes raise the intensity of every match.`);
 
   const formW = (f: string) => (f.split("").filter(c => c === "W").length);
   const hw = formW(homeStats.form), aw = formW(awayStats.form);
