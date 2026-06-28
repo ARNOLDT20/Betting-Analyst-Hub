@@ -24,4 +24,6 @@ export * from "./matchListResponse";
 export * from "./matchPrediction";
 export * from "./matchStatus";
 export * from "./statsSummary";
+export * from "./syncResult";
+export * from "./syncStatus";
 export * from "./teamPrediction";

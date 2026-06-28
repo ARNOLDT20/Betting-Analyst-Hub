@@ -4,6 +4,7 @@ import matchesRouter from "./matches";
 import leaguesRouter from "./leagues";
 import betOfTheDayRouter from "./bet-of-the-day";
 import statsRouter from "./stats";
+import syncRouter from "./sync";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(matchesRouter);
 router.use(leaguesRouter);
 router.use(betOfTheDayRouter);
 router.use(statsRouter);
+router.use(syncRouter);
 
 export default router;

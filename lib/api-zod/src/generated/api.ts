@@ -293,3 +293,21 @@ export const GetPredictionAccuracyResponseItem = zod.object({
 export const GetPredictionAccuracyResponse = zod.array(
   GetPredictionAccuracyResponseItem,
 );
+
+/**
+ * @summary Get current sync status
+ */
+export const GetSyncStatusResponse = zod.object({
+  lastSyncAt: zod.string().nullable(),
+  inProgress: zod.boolean(),
+});
+
+/**
+ * @summary Trigger a background sync of real fixtures
+ */
+export const TriggerSyncResponse = zod.object({
+  synced: zod.number(),
+  errors: zod.array(zod.string()),
+  lastSyncAt: zod.string().nullish(),
+  message: zod.string().optional(),
+});

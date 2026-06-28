@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Activity, Flame, LayoutDashboard, Target, TrendingUp, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { SyncBanner } from "./sync-banner";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -77,6 +78,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
         </header>
+
+        {/* Sync status bar */}
+        <SyncBanner />
 
         {/* Page Content */}
         <div className="flex-1 p-4 md:p-8 bg-grid">

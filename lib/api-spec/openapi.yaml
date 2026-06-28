@@ -18,6 +18,8 @@ tags:
     description: League and country operations
   - name: bet-of-the-day
     description: Bet of the day operations
+  - name: sync
+    description: Real data sync operations
 paths:
   /healthz:
     get:
@@ -211,6 +213,32 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/LeagueAccuracy"
+
+  /sync/status:
+    get:
+      operationId: getSyncStatus
+      tags: [sync]
+      summary: Get current sync status
+      responses:
+        "200":
+          description: Sync status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncStatus"
+
+  /sync:
+    post:
+      operationId: triggerSync
+      tags: [sync]
+      summary: Trigger a background sync of real fixtures
+      responses:
+        "200":
+          description: Sync started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResult"
 
 components:
   schemas:
@@ -518,3 +546,29 @@ components:
         correct:
           type: integer
       required: [league, country, accuracy, totalPredictions, correct]
+
+    SyncStatus:
+      type: object
+      properties:
+        lastSyncAt:
+          type: string
+          nullable: true
+        inProgress:
+          type: boolean
+      required: [lastSyncAt, inProgress]
+
+    SyncResult:
+      type: object
+      properties:
+        synced:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+        lastSyncAt:
+          type: string
+          nullable: true
+        message:
+          type: string
+      required: [synced, errors]

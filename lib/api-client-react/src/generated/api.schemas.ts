@@ -151,6 +151,18 @@ export interface LeagueAccuracy {
   correct: number;
 }
 
+export interface SyncStatus {
+  lastSyncAt: string | null;
+  inProgress: boolean;
+}
+
+export interface SyncResult {
+  synced: number;
+  errors: string[];
+  lastSyncAt?: string | null;
+  message?: string;
+}
+
 export type ListMatchesParams = {
   search?: string;
   leagueId?: string;

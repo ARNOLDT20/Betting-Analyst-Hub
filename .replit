@@ -33,3 +33,8 @@ externalPort = 8081
 [[ports]]
 localPort = 21765
 externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+FOOTBALL_DATA_API_KEY = "ddf6a27c08cf459bbf7b8d1c7c2cf919"
