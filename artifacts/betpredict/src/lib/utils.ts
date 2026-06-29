@@ -9,6 +9,10 @@ export function toSafeNumber(value: number | null | undefined, fallback = 0) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback
 }
 
+export function toArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value : []
+}
+
 export function formatNumber(value: number | null | undefined, digits = 2) {
   return toSafeNumber(value).toFixed(digits)
 }

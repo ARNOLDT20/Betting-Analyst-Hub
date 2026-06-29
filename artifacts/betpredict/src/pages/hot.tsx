@@ -6,10 +6,11 @@ import { MatchCard } from "@/components/match-card";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { PredictionBadge } from "@/components/prediction-badge";
 import { Link } from "wouter";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, toArray } from "@/lib/utils";
 
 export default function HotPage() {
   const { data: hotGames, isLoading } = useGetHotGames({ limit: 20 });
+  const hotGamesList = toArray(hotGames);
 
   return (
     <div className="space-y-6">
@@ -44,43 +45,43 @@ export default function HotPage() {
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="border-accent/40 text-accent text-xs">
             <Flame className="w-3 h-3 mr-1" />
-            {hotGames.length} Hot Picks Today
+            {hotGamesList.length} Hot Picks Today
           </Badge>
         </div>
       )}
 
       {/* Featured Hot Game */}
-      {!isLoading && hotGames && hotGames.length > 0 && (
-        <Link href={`/matches/${hotGames[0].id}`}>
-          <div className="rounded-2xl border border-accent/40 bg-gradient-to-br from-accent/10 to-card p-5 cursor-pointer hover:border-accent/60 transition-all" data-testid={`featured-hot-${hotGames[0].id}`}>
+      {!isLoading && hotGamesList.length > 0 && (
+        <Link href={`/matches/${hotGamesList[0].id}`}>
+          <div className="rounded-2xl border border-accent/40 bg-gradient-to-br from-accent/10 to-card p-5 cursor-pointer hover:border-accent/60 transition-all" data-testid={`featured-hot-${hotGamesList[0].id}`}>
             <div className="flex items-center gap-2 mb-3">
               <Flame className="w-4 h-4 text-accent" />
               <span className="text-xs text-accent font-bold tracking-wider uppercase">Featured Pick</span>
             </div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{hotGames[0].countryFlag} {hotGames[0].league}</p>
-                <h2 className="text-2xl font-bold text-white">{hotGames[0].homeTeam}</h2>
-                <p className="text-lg text-muted-foreground">vs {hotGames[0].awayTeam}</p>
+                <p className="text-xs text-muted-foreground mb-1">{hotGamesList[0].countryFlag} {hotGamesList[0].league}</p>
+                <h2 className="text-2xl font-bold text-white">{hotGamesList[0].homeTeam}</h2>
+                <p className="text-lg text-muted-foreground">vs {hotGamesList[0].awayTeam}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-muted-foreground mb-1">Value Rating</p>
-                <p className="text-4xl font-black text-accent">{formatNumber(hotGames[0].valueRating, 1)}</p>
+                <p className="text-4xl font-black text-accent">{formatNumber(hotGamesList[0].valueRating, 1)}</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5 mb-3 text-muted-foreground">
               <Clock className="w-3 h-3" />
-              <span className="text-xs">{fmtDate(hotGames[0].matchDate)} · {hotGames[0].matchTime} UTC</span>
+              <span className="text-xs">{fmtDate(hotGamesList[0].matchDate)} · {hotGamesList[0].matchTime} UTC</span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
-              <PredictionBadge prediction={hotGames[0].prediction} label={hotGames[0].predictionLabel} />
+              <PredictionBadge prediction={hotGamesList[0].prediction} label={hotGamesList[0].predictionLabel} />
               <div className="flex gap-2">
-                <OddsPill label="1" value={hotGames[0].homeWinOdds} active={hotGames[0].prediction === "home"} />
-                <OddsPill label="X" value={hotGames[0].drawOdds} active={hotGames[0].prediction === "draw"} />
-                <OddsPill label="2" value={hotGames[0].awayWinOdds} active={hotGames[0].prediction === "away"} />
+                <OddsPill label="1" value={hotGamesList[0].homeWinOdds} active={hotGamesList[0].prediction === "home"} />
+                <OddsPill label="X" value={hotGamesList[0].drawOdds} active={hotGamesList[0].prediction === "draw"} />
+                <OddsPill label="2" value={hotGamesList[0].awayWinOdds} active={hotGamesList[0].prediction === "away"} />
               </div>
               <div className="flex-1 min-w-[120px]">
-                <ConfidenceBar value={hotGames[0].confidenceScore} compact />
+                <ConfidenceBar value={hotGamesList[0].confidenceScore} compact />
               </div>
             </div>
           </div>
@@ -96,9 +97,9 @@ export default function HotPage() {
               <Skeleton key={i} className="h-28 w-full bg-muted rounded-xl" />
             ))}
           </div>
-        ) : hotGames && hotGames.length > 0 ? (
+        ) : hotGamesList.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2">
-            {hotGames.slice(1).map(m => (
+            {hotGamesList.slice(1).map(m => (
               <MatchCard key={m.id} match={m} />
             ))}
           </div>

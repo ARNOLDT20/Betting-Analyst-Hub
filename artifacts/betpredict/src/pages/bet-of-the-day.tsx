@@ -13,7 +13,7 @@ import { PredictionBadge } from "@/components/prediction-badge";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { formatNumber, formatPercentValue } from "@/lib/utils";
+import { formatNumber, formatPercentValue, toArray } from "@/lib/utils";
 
 function fmtDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
@@ -73,7 +73,7 @@ export default function BetOfTheDayPage() {
   const profit = potentialReturn - stakeNum;
 
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const selections = botd?.selections ?? [];
+  const selections = toArray(botd?.selections);
 
   return (
     <div className="space-y-6 max-w-3xl">

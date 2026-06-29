@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { MatchCard } from "@/components/match-card";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { PredictionBadge } from "@/components/prediction-badge";
-import { formatNumber, formatPercent } from "@/lib/utils";
+import { formatNumber, formatPercent, toArray } from "@/lib/utils";
 
 function fmtShortDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
@@ -20,9 +20,9 @@ export default function Dashboard() {
   const { data: hotGames, isLoading: hotLoading } = useGetHotGames({ limit: 4 });
   const { data: matchData, isLoading: matchesLoading } = useListMatches({ limit: 6, status: "upcoming" });
 
-  const selections = botd?.selections ?? [];
-  const hotGamesList = hotGames ?? [];
-  const upcomingMatches = matchData?.matches ?? [];
+  const selections = toArray(botd?.selections);
+  const hotGamesList = toArray(hotGames);
+  const upcomingMatches = toArray(matchData?.matches);
 
   return (
     <div className="space-y-8">

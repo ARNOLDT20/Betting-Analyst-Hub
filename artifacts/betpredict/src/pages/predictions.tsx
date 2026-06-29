@@ -4,13 +4,14 @@ import { TrendingUp, Award, Target, BarChart2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { formatPercent, toSafeNumber } from "@/lib/utils";
+import { formatPercent, toArray, toSafeNumber } from "@/lib/utils";
 
 export default function PredictionsPage() {
   const { data: accuracy, isLoading: accLoading } = useGetPredictionAccuracy();
   const { data: stats, isLoading: statsLoading } = useGetStatsSummary();
 
-  const chartData = accuracy?.map(a => {
+  const accuracyData = toArray(accuracy);
+  const chartData = accuracyData.map(a => {
     const leagueName = a.league ?? "Unknown League";
     return {
       name: leagueName.length > 16 ? leagueName.slice(0, 16) + "…" : leagueName,
@@ -109,7 +110,7 @@ export default function PredictionsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {accuracy?.sort((a, b) => b.accuracy - a.accuracy).map((a, i) => {
+                  {accuracyData.sort((a, b) => toSafeNumber(b.accuracy) - toSafeNumber(a.accuracy)).map((a, i) => {
                     const pct = Math.round(toSafeNumber(a.accuracy) * 100);
                     const color = pct >= 70 ? "text-green-400" : pct >= 55 ? "text-amber-400" : "text-red-400";
                     return (

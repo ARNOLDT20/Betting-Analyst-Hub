@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { PredictionBadge } from "@/components/prediction-badge";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, toArray } from "@/lib/utils";
 
 export default function MatchDetailPage() {
   const params = useParams<{ id: string }>();
@@ -198,7 +198,7 @@ export default function MatchDetailPage() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {match.analysisNotes.map((note, i) => (
+                  {analysisNotes.map((note, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                       <p className="text-sm text-muted-foreground">{note}</p>
@@ -217,7 +217,7 @@ export default function MatchDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {match.headToHead.map((h, i) => (
+                  {headToHead.map((h, i) => (
                     <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-background/50 border border-border" data-testid={`h2h-${i}`}>
                       <span className="text-xs text-muted-foreground">{h.date}</span>
                       <div className="flex items-center gap-2 text-sm font-medium text-white">

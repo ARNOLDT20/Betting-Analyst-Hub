@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MatchCard } from "@/components/match-card";
 import { Badge } from "@/components/ui/badge";
 import { useDebounce } from "@/hooks/use-debounce";
+import { toArray } from "@/lib/utils";
 
 export default function MatchesPage() {
   const [search, setSearch] = useState("");
@@ -35,7 +36,7 @@ export default function MatchesPage() {
   const { data: leagues } = useListLeagues();
   const { data: countries } = useListCountries();
 
-  const matches = matchData?.matches ?? [];
+  const matches = toArray(matchData?.matches);
 
   const grouped = groupBy !== "none" ? groupMatches(matches, groupBy) : null;
 
