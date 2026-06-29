@@ -1,11 +1,19 @@
 {
-  "buildCommand": "corepack pnpm install --ignore-scripts && corepack pnpm build",
-  "outputDirectory": "dist/public",
-  "framework": "vite",
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/public"
+      }
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "buildCommand": "corepack pnpm install --ignore-scripts && corepack pnpm build"
 }
