@@ -5,30 +5,18 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "headers": [
+  "routes": [
     {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     },
     {
-      "source": "/(favicon.svg|opengraph.jpg)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
+      "src": "/(favicon\\.svg|opengraph\\.jpg)",
+      "dest": "/$1"
+    },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
