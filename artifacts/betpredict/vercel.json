@@ -1,5 +1,11 @@
 {
-  "buildCommand": "pnpm --filter @workspace/betpredict build",
-  "outputDirectory": "artifacts/betpredict/dist/public",
-  "framework": "vite"
+  "buildCommand": "corepack pnpm install --ignore-scripts && corepack pnpm build",
+  "outputDirectory": "dist/public",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 {
-  "buildCommand": "corepack pnpm install --ignore-scripts && corepack pnpm --filter @workspace/betpredict build",
+  "buildCommand": "cd artifacts/betpredict && corepack pnpm install --ignore-scripts && corepack pnpm build",
   "outputDirectory": "artifacts/betpredict/dist/public",
   "framework": "vite",
   "rewrites": [
