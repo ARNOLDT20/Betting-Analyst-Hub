@@ -8,6 +8,7 @@ import { Link } from "wouter";
 import { MatchCard } from "@/components/match-card";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { PredictionBadge } from "@/components/prediction-badge";
+import { formatNumber, formatPercent } from "@/lib/utils";
 
 function fmtShortDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
@@ -30,8 +31,8 @@ export default function Dashboard() {
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <StatCard title="Today's Matches" value={stats?.todayMatches} icon={Activity} isLoading={statsLoading} />
         <StatCard title="Hot Games" value={stats?.hotGames} icon={Flame} iconColor="text-accent" isLoading={statsLoading} />
-        <StatCard title="Avg Confidence" value={stats ? `${(stats.avgConfidence * 100).toFixed(1)}%` : undefined} icon={Target} iconColor="text-primary" isLoading={statsLoading} />
-        <StatCard title="Success Rate" value={stats ? `${(stats.successRate * 100).toFixed(1)}%` : undefined} icon={Trophy} iconColor="text-yellow-400" isLoading={statsLoading} />
+        <StatCard title="Avg Confidence" value={stats ? formatPercent(stats.avgConfidence, 1) : undefined} icon={Target} iconColor="text-primary" isLoading={statsLoading} />
+        <StatCard title="Success Rate" value={stats ? formatPercent(stats.successRate, 1) : undefined} icon={Trophy} iconColor="text-yellow-400" isLoading={statsLoading} />
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -67,11 +68,11 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
                   <div>
                     <p className="text-xs text-muted-foreground">Combined Odds</p>
-                    <p className="text-2xl font-bold text-primary">{botd.totalOdds.toFixed(2)}x</p>
+                    <p className="text-2xl font-bold text-primary">{formatNumber(botd.totalOdds, 2)}x</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Avg Confidence</p>
-                    <p className="text-2xl font-bold text-white">{(botd.averageConfidence * 100).toFixed(0)}%</p>
+                    <p className="text-2xl font-bold text-white">{formatPercent(botd.averageConfidence, 0)}</p>
                   </div>
                 </div>
                 {botd.selections.slice(0, 3).map((s, i) => (
@@ -87,7 +88,7 @@ export default function Dashboard() {
                     </div>
                     <div className="flex items-center gap-2 ml-2 shrink-0">
                       <PredictionBadge prediction={s.prediction} label={s.predictionLabel} />
-                      <span className="text-sm font-bold text-accent">{s.odds.toFixed(2)}</span>
+                      <span className="text-sm font-bold text-accent">{formatNumber(s.odds, 2)}</span>
                     </div>
                   </div>
                 ))}

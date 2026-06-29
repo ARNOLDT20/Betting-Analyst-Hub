@@ -13,14 +13,16 @@ import { PredictionBadge } from "@/components/prediction-badge";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { formatNumber, formatPercentValue } from "@/lib/utils";
 
 function fmtDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
 }
 
-function confidenceColor(v: number) {
-  if (v >= 0.75) return "text-green-400";
-  if (v >= 0.5) return "text-amber-400";
+function confidenceColor(v: number | null | undefined) {
+  const value = typeof v === "number" && Number.isFinite(v) ? v : 0;
+  if (value >= 0.75) return "text-green-400";
+  if (value >= 0.5) return "text-amber-400";
   return "text-red-400";
 }
 
@@ -34,7 +36,7 @@ function OddsChain({ selections }: { selections: Array<{ odds: number; homeTeam:
           <div key={i} className="flex items-center gap-1">
             <div className="flex flex-col items-center">
               <span className="text-[10px] text-muted-foreground leading-none mb-0.5 truncate max-w-[60px]">{s.homeTeam.split(" ").slice(-1)[0]}</span>
-              <span className="text-sm font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">{s.odds.toFixed(2)}</span>
+              <span className="text-sm font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">{formatNumber(s.odds, 2)}</span>
             </div>
             {i < selections.length - 1 && <span className="text-muted-foreground text-xs font-bold">×</span>}
           </div>
@@ -42,7 +44,7 @@ function OddsChain({ selections }: { selections: Array<{ odds: number; homeTeam:
       })}
       <div className="flex items-center gap-1 ml-1">
         <span className="text-muted-foreground text-xs font-bold">=</span>
-        <span className="text-lg font-black text-accent">{running.toFixed(2)}x</span>
+        <span className="text-lg font-black text-accent">{formatNumber(running, 2)}x</span>
       </div>
     </div>
   );
@@ -133,15 +135,15 @@ export default function BetOfTheDayPage() {
               <div className="grid grid-cols-3 gap-3 mb-5">
                 <div className="rounded-xl bg-background/60 border border-border p-3 text-center">
                   <p className="text-xs text-muted-foreground mb-1">Combined Odds</p>
-                  <p className="text-3xl font-black text-primary">{totalOdds.toFixed(2)}<span className="text-lg">x</span></p>
+                  <p className="text-3xl font-black text-primary">{formatNumber(totalOdds, 2)}<span className="text-lg">x</span></p>
                 </div>
                 <div className="rounded-xl bg-background/60 border border-border p-3 text-center">
                   <p className="text-xs text-muted-foreground mb-1">Avg Confidence</p>
-                  <p className={`text-3xl font-black ${confidenceColor(avgConf)}`}>{(avgConf * 100).toFixed(0)}<span className="text-lg">%</span></p>
+                  <p className={`text-3xl font-black ${confidenceColor(avgConf)}`}>{formatPercentValue(avgConf, 0)}<span className="text-lg">%</span></p>
                 </div>
                 <div className="rounded-xl bg-background/60 border border-border p-3 text-center">
                   <p className="text-xs text-muted-foreground mb-1">Value Score</p>
-                  <p className="text-3xl font-black text-accent">{(avgConf * totalOdds).toFixed(1)}</p>
+                  <p className="text-3xl font-black text-accent">{formatNumber(avgConf * totalOdds, 1)}</p>
                 </div>
               </div>
 
@@ -175,11 +177,11 @@ export default function BetOfTheDayPage() {
                   </div>
                   <div className="rounded-lg bg-background/60 border border-border p-2 text-center">
                     <p className="text-xs text-muted-foreground leading-none mb-1">Return</p>
-                    <p className="text-lg font-bold text-white">${potentialReturn.toFixed(2)}</p>
+                    <p className="text-lg font-bold text-white">${formatNumber(potentialReturn, 2)}</p>
                   </div>
                   <div className="rounded-lg bg-green-500/10 border border-green-500/30 p-2 text-center">
                     <p className="text-xs text-green-400 leading-none mb-1">Profit</p>
-                    <p className="text-lg font-bold text-green-400">+${profit.toFixed(2)}</p>
+                    <p className="text-lg font-bold text-green-400">+${formatNumber(profit, 2)}</p>
                   </div>
                 </div>
               </div>
@@ -235,10 +237,10 @@ export default function BetOfTheDayPage() {
                           <PredictionBadge prediction={s.prediction} label={s.predictionLabel} />
                           <div className="flex items-center gap-1.5">
                             <span className="text-xs text-muted-foreground">Odds</span>
-                            <span className="text-xl font-black text-primary">{s.odds.toFixed(2)}</span>
+                            <span className="text-xl font-black text-primary">{formatNumber(s.odds, 2)}</span>
                           </div>
                           <span className={`text-xs font-semibold ${confidenceColor(s.confidenceScore)}`}>
-                            {(s.confidenceScore * 100).toFixed(0)}% conf
+                            {formatPercentValue(s.confidenceScore, 0)} conf
                           </span>
                         </div>
                       </div>

@@ -1,12 +1,15 @@
+import { toSafeNumber } from "@/lib/utils";
+
 interface ConfidenceBarProps {
-  value: number;
+  value: number | null | undefined;
   compact?: boolean;
 }
 
 export function ConfidenceBar({ value, compact = false }: ConfidenceBarProps) {
-  const pct = Math.round(value * 100);
-  const color = value >= 0.75 ? "bg-green-500" : value >= 0.5 ? "bg-amber-500" : "bg-red-500";
-  const textColor = value >= 0.75 ? "text-green-400" : value >= 0.5 ? "text-amber-400" : "text-red-400";
+  const normalizedValue = toSafeNumber(value);
+  const pct = Math.round(normalizedValue * 100);
+  const color = normalizedValue >= 0.75 ? "bg-green-500" : normalizedValue >= 0.5 ? "bg-amber-500" : "bg-red-500";
+  const textColor = normalizedValue >= 0.75 ? "text-green-400" : normalizedValue >= 0.5 ? "text-amber-400" : "text-red-400";
 
   if (compact) {
     return (

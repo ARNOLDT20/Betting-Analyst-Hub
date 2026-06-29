@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Flame, Clock } from "lucide-react";
 import { ConfidenceBar } from "./confidence-bar";
 import { PredictionBadge } from "./prediction-badge";
+import { formatNumber } from "@/lib/utils";
 
 interface Match {
   id: string;
@@ -85,7 +86,7 @@ export function MatchCard({ match: m }: { match: Match }) {
           <div className="flex-1">
             <ConfidenceBar value={m.confidenceScore} compact />
           </div>
-          <span className="text-xs text-muted-foreground shrink-0">Val: <span className="text-white font-medium">{m.valueRating.toFixed(1)}</span></span>
+          <span className="text-xs text-muted-foreground shrink-0">Val: <span className="text-white font-medium">{formatNumber(m.valueRating, 1)}</span></span>
         </div>
       </div>
     </Link>
@@ -96,7 +97,7 @@ function OddsChip({ label, value, active }: { label: string; value: number; acti
   return (
     <div className={`flex flex-col items-center px-1.5 py-1 rounded text-center min-w-[32px] ${active ? "bg-primary/20 border border-primary/40" : "bg-background/60 border border-border"}`}>
       <span className={`text-xs ${active ? "text-primary font-bold" : "text-muted-foreground"}`}>{label}</span>
-      <span className={`text-xs font-bold ${active ? "text-primary" : "text-white"}`}>{value.toFixed(2)}</span>
+      <span className={`text-xs font-bold ${active ? "text-primary" : "text-white"}`}>{formatNumber(value, 2)}</span>
     </div>
   );
 }

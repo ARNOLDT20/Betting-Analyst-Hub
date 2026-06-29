@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { PredictionBadge } from "@/components/prediction-badge";
+import { formatNumber } from "@/lib/utils";
 
 export default function MatchDetailPage() {
   const params = useParams<{ id: string }>();
@@ -101,7 +102,7 @@ export default function MatchDetailPage() {
                 ].map(o => (
                   <div key={o.sublabel} className={`rounded-lg border p-3 text-center ${o.active ? "border-primary/50 bg-primary/10" : "border-border bg-background/50"}`}>
                     <p className="text-xs text-muted-foreground truncate">{o.label}</p>
-                    <p className={`text-xl font-bold mt-1 ${o.active ? "text-primary" : "text-white"}`}>{o.value.toFixed(2)}</p>
+                    <p className={`text-xl font-bold mt-1 ${o.active ? "text-primary" : "text-white"}`}>{formatNumber(o.value, 2)}</p>
                     <p className={`text-xs ${o.active ? "text-primary/70" : "text-muted-foreground"}`}>{o.sublabel}</p>
                   </div>
                 ))}
@@ -115,7 +116,7 @@ export default function MatchDetailPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground mb-1">Value Rating</p>
-                  <p className="text-2xl font-bold text-white">{match.valueRating.toFixed(1)}<span className="text-sm text-muted-foreground">/10</span></p>
+                  <p className="text-2xl font-bold text-white">{formatNumber(match.valueRating, 1)}<span className="text-sm text-muted-foreground">/10</span></p>
                 </div>
                 <div className="w-36">
                   <ConfidenceBar value={match.confidenceScore} />
@@ -162,11 +163,11 @@ export default function MatchDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-lg border border-border bg-background/50 p-3 text-center">
                   <p className="text-xs text-muted-foreground">Expected Goals — {match.homeTeam}</p>
-                  <p className="text-2xl font-bold text-white mt-1">{match.expectedHomeGoals.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-white mt-1">{formatNumber(match.expectedHomeGoals, 2)}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-background/50 p-3 text-center">
                   <p className="text-xs text-muted-foreground">Expected Goals — {match.awayTeam}</p>
-                  <p className="text-2xl font-bold text-white mt-1">{match.expectedAwayGoals.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-white mt-1">{formatNumber(match.expectedAwayGoals, 2)}</p>
                 </div>
               </div>
             </CardContent>
@@ -255,11 +256,11 @@ function TeamAnalysisCard({ teamName, prediction, isHome }: { teamName: string; 
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="rounded bg-background/50 border border-border p-2">
             <p className="text-xs text-muted-foreground">Goals Scored</p>
-            <p className="text-base font-bold text-green-400 flex items-center justify-center gap-1"><TrendingUp className="w-3 h-3" />{prediction.recentGoalsScored.toFixed(1)}</p>
+            <p className="text-base font-bold text-green-400 flex items-center justify-center gap-1"><TrendingUp className="w-3 h-3" />{formatNumber(prediction.recentGoalsScored, 1)}</p>
           </div>
           <div className="rounded bg-background/50 border border-border p-2">
             <p className="text-xs text-muted-foreground">Goals Conceded</p>
-            <p className="text-base font-bold text-red-400 flex items-center justify-center gap-1"><TrendingDown className="w-3 h-3" />{prediction.recentGoalsConceded.toFixed(1)}</p>
+            <p className="text-base font-bold text-red-400 flex items-center justify-center gap-1"><TrendingDown className="w-3 h-3" />{formatNumber(prediction.recentGoalsConceded, 1)}</p>
           </div>
         </div>
         <div>
@@ -268,7 +269,7 @@ function TeamAnalysisCard({ teamName, prediction, isHome }: { teamName: string; 
         </div>
         <div>
           <p className="text-xs text-muted-foreground mb-1">Win Probability</p>
-          <p className="text-xl font-bold text-white">{(prediction.winProbability * 100).toFixed(1)}%</p>
+          <p className="text-xl font-bold text-white">{formatNumber(prediction.winProbability * 100, 1)}%</p>
         </div>
       </CardContent>
     </Card>

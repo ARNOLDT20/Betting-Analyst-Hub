@@ -6,6 +6,7 @@ import { MatchCard } from "@/components/match-card";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { PredictionBadge } from "@/components/prediction-badge";
 import { Link } from "wouter";
+import { formatNumber } from "@/lib/utils";
 
 export default function HotPage() {
   const { data: hotGames, isLoading } = useGetHotGames({ limit: 20 });
@@ -64,7 +65,7 @@ export default function HotPage() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-muted-foreground mb-1">Value Rating</p>
-                <p className="text-4xl font-black text-accent">{hotGames[0].valueRating.toFixed(1)}</p>
+                <p className="text-4xl font-black text-accent">{formatNumber(hotGames[0].valueRating, 1)}</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5 mb-3 text-muted-foreground">
@@ -121,7 +122,7 @@ function OddsPill({ label, value, active }: { label: string; value: number; acti
   return (
     <div className={`px-3 py-1.5 rounded-lg border text-center ${active ? "bg-accent/20 border-accent/50" : "bg-background/50 border-border"}`}>
       <p className={`text-xs ${active ? "text-accent" : "text-muted-foreground"}`}>{label}</p>
-      <p className={`text-base font-bold ${active ? "text-accent" : "text-white"}`}>{value.toFixed(2)}</p>
+      <p className={`text-base font-bold ${active ? "text-accent" : "text-white"}`}>{formatNumber(value, 2)}</p>
     </div>
   );
 }

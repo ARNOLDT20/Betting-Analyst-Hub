@@ -4,6 +4,7 @@ import { TrendingUp, Award, Target, BarChart2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { formatPercent, toSafeNumber } from "@/lib/utils";
 
 export default function PredictionsPage() {
   const { data: accuracy, isLoading: accLoading } = useGetPredictionAccuracy();
@@ -30,8 +31,8 @@ export default function PredictionsPage() {
           Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 bg-muted rounded-xl" />)
         ) : stats ? (
           <>
-            <SummaryCard icon={TrendingUp} title="Overall Success Rate" value={`${(stats.successRate * 100).toFixed(1)}%`} color="text-green-400" />
-            <SummaryCard icon={Target} title="Avg Confidence" value={`${(stats.avgConfidence * 100).toFixed(1)}%`} color="text-primary" />
+            <SummaryCard icon={TrendingUp} title="Overall Success Rate" value={formatPercent(stats.successRate, 1)} color="text-green-400" />
+            <SummaryCard icon={Target} title="Avg Confidence" value={formatPercent(stats.avgConfidence, 1)} color="text-primary" />
             <SummaryCard icon={BarChart2} title="Total Predictions" value={`${(stats.totalMatches * 8).toLocaleString()}`} color="text-blue-400" />
             <SummaryCard icon={Award} title="Leagues Tracked" value={stats.totalLeagues.toString()} color="text-amber-400" />
           </>
@@ -106,7 +107,7 @@ export default function PredictionsPage() {
                 </thead>
                 <tbody>
                   {accuracy?.sort((a, b) => b.accuracy - a.accuracy).map((a, i) => {
-                    const pct = Math.round(a.accuracy * 100);
+                    const pct = Math.round(toSafeNumber(a.accuracy) * 100);
                     const color = pct >= 70 ? "text-green-400" : pct >= 55 ? "text-amber-400" : "text-red-400";
                     return (
                       <tr key={i} className="border-b border-border/50 hover:bg-background/50 transition-colors" data-testid={`accuracy-row-${i}`}>
