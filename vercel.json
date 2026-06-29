@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "routes": [
-    {
-      "src": "^/(?!assets/|favicon\\.svg|opengraph\\.jpg).*$",
-      "dest": "/index.html"
-    }
-  ]
-}
