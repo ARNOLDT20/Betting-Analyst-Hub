@@ -15,5 +15,5 @@
       "dest": "/index.html"
     }
   ],
-  "buildCommand": "cd artifacts/betpredict && corepack pnpm install --ignore-scripts && corepack pnpm build"
+  "buildCommand": "corepack pnpm --dir artifacts/betpredict install --ignore-scripts && corepack pnpm --dir artifacts/betpredict build"
 }
