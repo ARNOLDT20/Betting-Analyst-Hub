@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm --filter @workspace/betpredict build",
+  "outputDirectory": "artifacts/betpredict/dist/public",
+  "framework": "vite"
+}
