@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Activity, Flame, LayoutDashboard, Target, TrendingUp, Menu } from "lucide-react";
+import { Activity, Flame, LayoutDashboard, Target, TrendingUp, Menu, Hammer } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { SyncBanner } from "./sync-banner";
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/matches", label: "Match Explorer", icon: Activity },
   { href: "/hot", label: "Hot Games", icon: Flame },
   { href: "/bet-of-the-day", label: "Bet of the Day", icon: Target },
+  { href: "/bet-builder", label: "Bet Builder", icon: Hammer },
   { href: "/predictions", label: "Predictions", icon: TrendingUp },
 ];
 

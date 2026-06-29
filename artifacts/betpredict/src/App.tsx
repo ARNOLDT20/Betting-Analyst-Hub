@@ -8,6 +8,7 @@ import MatchesPage from "@/pages/matches";
 import MatchDetailPage from "@/pages/match-detail";
 import HotPage from "@/pages/hot";
 import BetOfTheDayPage from "@/pages/bet-of-the-day";
+import BetBuilderPage from "@/pages/bet-builder";
 import PredictionsPage from "@/pages/predictions";
 import NotFound from "@/pages/not-found";
 
@@ -29,6 +30,7 @@ function Router() {
         <Route path="/matches/:id" component={MatchDetailPage} />
         <Route path="/hot" component={HotPage} />
         <Route path="/bet-of-the-day" component={BetOfTheDayPage} />
+        <Route path="/bet-builder" component={BetBuilderPage} />
         <Route path="/predictions" component={PredictionsPage} />
         <Route component={NotFound} />
       </Switch>

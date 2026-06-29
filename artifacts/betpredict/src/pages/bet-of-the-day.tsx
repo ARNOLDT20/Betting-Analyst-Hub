@@ -1,20 +1,59 @@
+import { useState } from "react";
 import { useGetBetOfTheDay, useRegenerateBetOfTheDay, getGetBetOfTheDayQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Target, RefreshCw, CheckCircle2, TrendingUp, Clock, Info } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Target, RefreshCw, CheckCircle2, Clock, Info, Zap, TrendingUp,
+  Calendar, DollarSign, ChevronRight, Flame, Shield
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { PredictionBadge } from "@/components/prediction-badge";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+
+function fmtDate(d: string) {
+  return new Date(d + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function confidenceColor(v: number) {
+  if (v >= 0.75) return "text-green-400";
+  if (v >= 0.5) return "text-amber-400";
+  return "text-red-400";
+}
+
+function OddsChain({ selections }: { selections: Array<{ odds: number; homeTeam: string; awayTeam: string }> }) {
+  let running = 1;
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {selections.map((s, i) => {
+        running *= s.odds;
+        return (
+          <div key={i} className="flex items-center gap-1">
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] text-muted-foreground leading-none mb-0.5 truncate max-w-[60px]">{s.homeTeam.split(" ").slice(-1)[0]}</span>
+              <span className="text-sm font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">{s.odds.toFixed(2)}</span>
+            </div>
+            {i < selections.length - 1 && <span className="text-muted-foreground text-xs font-bold">×</span>}
+          </div>
+        );
+      })}
+      <div className="flex items-center gap-1 ml-1">
+        <span className="text-muted-foreground text-xs font-bold">=</span>
+        <span className="text-lg font-black text-accent">{running.toFixed(2)}x</span>
+      </div>
+    </div>
+  );
+}
 
 export default function BetOfTheDayPage() {
   const { data: botd, isLoading } = useGetBetOfTheDay();
   const regenerate = useRegenerateBetOfTheDay();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [stake, setStake] = useState("10");
 
   function handleRegenerate() {
     regenerate.mutate(undefined, {
@@ -27,6 +66,11 @@ export default function BetOfTheDayPage() {
 
   const totalOdds = botd?.totalOdds ?? 0;
   const avgConf = botd?.averageConfidence ?? 0;
+  const stakeNum = parseFloat(stake) || 0;
+  const potentialReturn = stakeNum * totalOdds;
+  const profit = potentialReturn - stakeNum;
+
+  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -37,8 +81,8 @@ export default function BetOfTheDayPage() {
             <Target className="w-6 h-6 text-primary" />
             <h1 className="text-3xl font-bold text-white tracking-tight">Bet of the Day</h1>
           </div>
-          <p className="text-muted-foreground text-sm">
-            AI-generated multi-bet combining the highest-confidence picks of the day.
+          <p className="text-muted-foreground text-sm flex items-center gap-1.5">
+            <Calendar className="w-3 h-3" /> {today}
           </p>
         </div>
         <Button
@@ -56,91 +100,180 @@ export default function BetOfTheDayPage() {
 
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-36 w-full bg-muted rounded-2xl" />
-          {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full bg-muted rounded-xl" />)}
+          <Skeleton className="h-56 w-full bg-muted rounded-2xl" />
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full bg-muted rounded-xl" />)}
         </div>
       ) : botd ? (
         <div className="space-y-5">
-          {/* Summary Card */}
-          <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground mb-1">Combined Odds</p>
-                <p className="text-4xl font-black text-primary">{totalOdds.toFixed(2)}x</p>
+
+          {/* Bet Slip Ticket */}
+          <div className="relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card">
+            {/* Ticket top band */}
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-accent to-primary opacity-60" />
+
+            {/* Watermark */}
+            <div className="absolute -right-6 -top-6 opacity-5 pointer-events-none">
+              <Target className="w-40 h-40 text-primary" />
+            </div>
+
+            <div className="p-5 relative">
+              {/* Ticket header */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/20 border border-primary/30">
+                  <Zap className="w-3 h-3 text-primary" />
+                  <span className="text-xs font-bold text-primary tracking-wider uppercase">AI Multi-Bet</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/40 border border-border">
+                  <Shield className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">{botd.selections.length} Legs</span>
+                </div>
               </div>
-              <div className="text-center border-x border-border">
-                <p className="text-xs text-muted-foreground mb-1">Avg Confidence</p>
-                <p className="text-4xl font-black text-white">{(avgConf * 100).toFixed(0)}%</p>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-3 gap-3 mb-5">
+                <div className="rounded-xl bg-background/60 border border-border p-3 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Combined Odds</p>
+                  <p className="text-3xl font-black text-primary">{totalOdds.toFixed(2)}<span className="text-lg">x</span></p>
+                </div>
+                <div className="rounded-xl bg-background/60 border border-border p-3 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Avg Confidence</p>
+                  <p className={`text-3xl font-black ${confidenceColor(avgConf)}`}>{(avgConf * 100).toFixed(0)}<span className="text-lg">%</span></p>
+                </div>
+                <div className="rounded-xl bg-background/60 border border-border p-3 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Value Score</p>
+                  <p className="text-3xl font-black text-accent">{(avgConf * totalOdds).toFixed(1)}</p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground mb-1">Selections</p>
-                <p className="text-4xl font-black text-white">{botd.selections.length}</p>
+
+              {/* Odds chain */}
+              <div className="mb-4">
+                <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Odds Multiplier Chain</p>
+                <OddsChain selections={botd.selections} />
+              </div>
+
+              {/* Dotted separator (ticket perforation style) */}
+              <div className="flex items-center gap-1 my-4 -mx-5">
+                <div className="w-4 h-4 rounded-full bg-background border-r-0 border border-border" />
+                <div className="flex-1 border-t border-dashed border-border" />
+                <div className="w-4 h-4 rounded-full bg-background border-l-0 border border-border" />
+              </div>
+
+              {/* Payout Calculator */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><DollarSign className="w-3 h-3" /> Payout Calculator</p>
+                <div className="grid grid-cols-3 gap-2 items-end">
+                  <div>
+                    <label className="text-xs text-muted-foreground block mb-1">Stake ($)</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={stake}
+                      onChange={e => setStake(e.target.value)}
+                      className="bg-background/60 border-border text-white h-9 text-sm"
+                    />
+                  </div>
+                  <div className="rounded-lg bg-background/60 border border-border p-2 text-center">
+                    <p className="text-xs text-muted-foreground leading-none mb-1">Return</p>
+                    <p className="text-lg font-bold text-white">${potentialReturn.toFixed(2)}</p>
+                  </div>
+                  <div className="rounded-lg bg-green-500/10 border border-green-500/30 p-2 text-center">
+                    <p className="text-xs text-green-400 leading-none mb-1">Profit</p>
+                    <p className="text-lg font-bold text-green-400">+${profit.toFixed(2)}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-background/40 border border-border">
-              <Info className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+            {/* Analysis note */}
+            <div className="border-t border-border/60 px-5 py-3 bg-background/30 flex items-start gap-2">
+              <Info className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
               <p className="text-xs text-muted-foreground">{botd.analysisNote}</p>
             </div>
-
-            <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              Generated: {new Date(botd.generatedAt).toLocaleString()}
-            </p>
           </div>
 
           {/* Selections */}
           <div>
-            <h2 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+            <h2 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-primary" />
-              Selected Matches
+              Selections ({botd.selections.length} legs)
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {botd.selections.map((s, i) => (
                 <Link key={s.matchId} href={`/matches/${s.matchId}`}>
-                  <Card className="bg-card border-card-border hover:border-primary/40 cursor-pointer transition-all" data-testid={`selection-card-${i}`}>
-                    <CardContent className="p-4">
+                  <div
+                    className="group flex items-stretch gap-0 rounded-xl border border-card-border hover:border-primary/40 bg-card cursor-pointer transition-all overflow-hidden"
+                    data-testid={`selection-card-${i}`}
+                  >
+                    {/* Leg number strip */}
+                    <div className="flex items-center justify-center w-8 bg-primary/10 border-r border-primary/20 shrink-0">
+                      <span className="text-xs font-bold text-primary">{i + 1}</span>
+                    </div>
+
+                    <div className="flex-1 p-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-xs text-muted-foreground">{s.league}</span>
-                            <span className="text-xs text-muted-foreground">•</span>
+                          {/* League + date */}
+                          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                             <span className="text-xs text-muted-foreground">{s.country}</span>
-                          </div>
-                          <p className="text-base font-semibold text-white">{s.homeTeam} vs {s.awayTeam}</p>
-                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="text-muted-foreground/40">·</span>
+                            <span className="text-xs text-muted-foreground truncate">{s.league}</span>
+                            <span className="text-muted-foreground/40">·</span>
                             <Clock className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground">{s.matchDate} {s.matchTime}</span>
+                            <span className="text-xs text-muted-foreground">{fmtDate(s.matchDate)} {s.matchTime}</span>
+                          </div>
+                          {/* Teams */}
+                          <p className="text-sm font-semibold text-white">{s.homeTeam} <span className="text-muted-foreground font-normal">vs</span> {s.awayTeam}</p>
+                          {/* Confidence bar */}
+                          <div className="mt-2">
+                            <ConfidenceBar value={s.confidenceScore} />
                           </div>
                         </div>
-                        <div className="text-right shrink-0">
+
+                        {/* Right: prediction + odds */}
+                        <div className="flex flex-col items-end gap-2 shrink-0">
                           <PredictionBadge prediction={s.prediction} label={s.predictionLabel} />
-                          <p className="text-2xl font-bold text-primary mt-1">{s.odds.toFixed(2)}</p>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">Odds</span>
+                            <span className="text-xl font-black text-primary">{s.odds.toFixed(2)}</span>
+                          </div>
+                          <span className={`text-xs font-semibold ${confidenceColor(s.confidenceScore)}`}>
+                            {(s.confidenceScore * 100).toFixed(0)}% conf
+                          </span>
                         </div>
                       </div>
-                      <div className="mt-3">
-                        <ConfidenceBar value={s.confidenceScore} />
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="flex items-center pr-2 text-muted-foreground group-hover:text-primary transition-colors">
+                      <ChevronRight className="w-4 h-4" />
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* Disclaimer */}
-          <div className="rounded-lg border border-border bg-card/50 p-4">
-            <p className="text-xs text-muted-foreground">
-              <span className="font-semibold text-white">Disclaimer:</span> Predictions are based on statistical models. Betting involves risk. Past performance does not guarantee future results. Please bet responsibly.
+          {/* Generated at + Disclaimer */}
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              Generated: {new Date(botd.generatedAt).toLocaleString()}
             </p>
+            <div className="rounded-lg border border-border bg-card/50 p-4">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-semibold text-white">Disclaimer:</span> Predictions are based on statistical models using Poisson distribution analysis. Betting involves risk. Past performance does not guarantee future results. Please bet responsibly.
+              </p>
+            </div>
           </div>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-xl">
           <Target className="w-10 h-10 text-muted-foreground mb-3" />
           <p className="text-white font-medium">No bet of the day yet</p>
-          <Button variant="outline" size="sm" onClick={handleRegenerate} className="mt-4" data-testid="button-generate-botd">
-            Generate Now
+          <p className="text-sm text-muted-foreground mb-4">Click generate to compute AI selections from today's fixtures</p>
+          <Button variant="outline" size="sm" onClick={handleRegenerate} className="gap-2" data-testid="button-generate-botd">
+            <Flame className="w-4 h-4 text-accent" /> Generate Now
           </Button>
         </div>
       )}
