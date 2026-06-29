@@ -14,6 +14,7 @@ import { PredictionBadge } from "@/components/prediction-badge";
 import { ConfidenceBar } from "@/components/confidence-bar";
 import { Link } from "wouter";
 import { useDebounce } from "@/hooks/use-debounce";
+import { formatNumber, formatPercentValue, toSafeNumber } from "@/lib/utils";
 
 type Prediction = "home" | "draw" | "away" | "btts" | "over25";
 
@@ -63,9 +64,10 @@ const PRED_LABELS: Record<Prediction, string> = {
   over25: "Over 2.5",
 };
 
-function confidenceColor(v: number) {
-  if (v >= 0.75) return "text-green-400";
-  if (v >= 0.5) return "text-amber-400";
+function confidenceColor(v: number | null | undefined) {
+  const value = toSafeNumber(v, 0);
+  if (value >= 0.75) return "text-green-400";
+  if (value >= 0.5) return "text-amber-400";
   return "text-red-400";
 }
 
@@ -87,7 +89,7 @@ export default function BetBuilderPage() {
   const matches = matchData?.matches ?? [];
 
   const inSlip = useMemo(() => new Set(slip.map(s => s.matchId)), [slip]);
-  const combinedOdds = slip.reduce((acc, s) => acc * s.odds, 1);
+  const combinedOdds = slip.reduce((acc, s) => acc * toSafeNumber(s.odds, 1), 1);
   const stakeNum = parseFloat(stake) || 0;
   const potentialReturn = stakeNum * combinedOdds;
   const profit = potentialReturn - stakeNum;
@@ -148,7 +150,7 @@ export default function BetBuilderPage() {
         </div>
         {slip.length > 0 && (
           <Badge className="bg-primary text-primary-foreground text-sm px-3 py-1">
-            {slip.length} {slip.length === 1 ? "leg" : "legs"} · {combinedOdds.toFixed(2)}x
+            {slip.length} {slip.length === 1 ? "leg" : "legs"} · {formatNumber(combinedOdds, 2)}x
           </Badge>
         )}
       </div>
@@ -238,14 +240,14 @@ export default function BetBuilderPage() {
                         <p className="text-sm font-semibold text-white">{m.homeTeam} <span className="text-muted-foreground font-normal">vs</span> {m.awayTeam}</p>
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                           <PredictionBadge prediction={m.prediction} label={m.predictionLabel} small />
-                          <span className={`text-xs font-medium ${confidenceColor(m.confidenceScore)}`}>{(m.confidenceScore * 100).toFixed(0)}% conf</span>
+                          <span className={`text-xs font-medium ${confidenceColor(m.confidenceScore)}`}>{formatPercentValue(m.confidenceScore, 0)} conf</span>
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <span className="font-medium text-white/70">1</span>
-                            <span className="text-primary font-bold">{m.homeWinOdds.toFixed(2)}</span>
+                            <span className="text-primary font-bold">{formatNumber(m.homeWinOdds, 2)}</span>
                             <span className="font-medium text-white/70">X</span>
-                            <span className="text-primary font-bold">{m.drawOdds.toFixed(2)}</span>
+                            <span className="text-primary font-bold">{formatNumber(m.drawOdds, 2)}</span>
                             <span className="font-medium text-white/70">2</span>
-                            <span className="text-primary font-bold">{m.awayWinOdds.toFixed(2)}</span>
+                            <span className="text-primary font-bold">{formatNumber(m.awayWinOdds, 2)}</span>
                           </div>
                         </div>
                       </Link>
@@ -344,7 +346,7 @@ export default function BetBuilderPage() {
                                   className={`flex flex-col items-center px-1.5 py-1 rounded border text-[10px] transition-all ${active ? "bg-primary/20 border-primary/50 text-primary" : "bg-background/60 border-border text-muted-foreground hover:border-primary/30 hover:text-white"}`}
                                 >
                                   <span className="font-medium leading-none">{PRED_LABELS[pred]}</span>
-                                  <span className={`font-bold mt-0.5 ${active ? "text-primary" : "text-white"}`}>{odds.toFixed(2)}</span>
+                                  <span className={`font-bold mt-0.5 ${active ? "text-primary" : "text-white"}`}>{formatNumber(odds, 2)}</span>
                                 </button>
                               );
                             })}
@@ -356,7 +358,7 @@ export default function BetBuilderPage() {
                               <ConfidenceBar value={s.confidenceScore} />
                             </div>
                             <span className={`text-[10px] font-semibold ml-2 ${confidenceColor(s.confidenceScore)}`}>
-                              {(s.confidenceScore * 100).toFixed(0)}%
+                              {formatPercentValue(s.confidenceScore, 0)}
                             </span>
                           </div>
                         </div>
@@ -372,7 +374,7 @@ export default function BetBuilderPage() {
                   {/* Odds summary */}
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Combined Odds</span>
-                    <span className="text-lg font-black text-primary">{combinedOdds.toFixed(2)}x</span>
+                    <span className="text-lg font-black text-primary">{formatNumber(combinedOdds, 2)}x</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground flex items-center gap-1"><Zap className="w-3 h-3" /> Legs</span>
@@ -398,11 +400,11 @@ export default function BetBuilderPage() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="rounded-lg bg-background/60 border border-border p-2.5 text-center">
                       <p className="text-[10px] text-muted-foreground mb-0.5">Total Return</p>
-                      <p className="text-base font-bold text-white">${potentialReturn.toFixed(2)}</p>
+                      <p className="text-base font-bold text-white">${formatNumber(potentialReturn, 2)}</p>
                     </div>
                     <div className="rounded-lg bg-green-500/10 border border-green-500/30 p-2.5 text-center">
                       <p className="text-[10px] text-green-400 mb-0.5">Profit</p>
-                      <p className="text-base font-bold text-green-400">+${profit.toFixed(2)}</p>
+                      <p className="text-base font-bold text-green-400">+${formatNumber(profit, 2)}</p>
                     </div>
                   </div>
 
