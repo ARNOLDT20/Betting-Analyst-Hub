@@ -73,6 +73,7 @@ export default function BetOfTheDayPage() {
   const profit = potentialReturn - stakeNum;
 
   const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const selections = botd?.selections ?? [];
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -127,7 +128,7 @@ export default function BetOfTheDayPage() {
                 </div>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/40 border border-border">
                   <Shield className="w-3 h-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">{botd.selections.length} Legs</span>
+                  <span className="text-xs text-muted-foreground">{selections.length} Legs</span>
                 </div>
               </div>
 
@@ -150,7 +151,7 @@ export default function BetOfTheDayPage() {
               {/* Odds chain */}
               <div className="mb-4">
                 <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Odds Multiplier Chain</p>
-                <OddsChain selections={botd.selections} />
+                <OddsChain selections={selections} />
               </div>
 
               {/* Dotted separator (ticket perforation style) */}
@@ -198,10 +199,10 @@ export default function BetOfTheDayPage() {
           <div>
             <h2 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-primary" />
-              Selections ({botd.selections.length} legs)
+              Selections ({selections.length} legs)
             </h2>
             <div className="space-y-2">
-              {botd.selections.map((s, i) => (
+              {selections.map((s, i) => (
                 <Link key={s.matchId} href={`/matches/${s.matchId}`}>
                   <div
                     className="group flex items-stretch gap-0 rounded-xl border border-card-border hover:border-primary/40 bg-card cursor-pointer transition-all overflow-hidden"

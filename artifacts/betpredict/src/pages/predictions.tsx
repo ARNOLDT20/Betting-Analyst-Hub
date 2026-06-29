@@ -10,11 +10,14 @@ export default function PredictionsPage() {
   const { data: accuracy, isLoading: accLoading } = useGetPredictionAccuracy();
   const { data: stats, isLoading: statsLoading } = useGetStatsSummary();
 
-  const chartData = accuracy?.map(a => ({
-    name: a.league.length > 16 ? a.league.slice(0, 16) + "…" : a.league,
-    accuracy: Math.round(a.accuracy * 100),
-    total: a.totalPredictions,
-  })) ?? [];
+  const chartData = accuracy?.map(a => {
+    const leagueName = a.league ?? "Unknown League";
+    return {
+      name: leagueName.length > 16 ? leagueName.slice(0, 16) + "…" : leagueName,
+      accuracy: Math.round(toSafeNumber(a.accuracy) * 100),
+      total: a.totalPredictions,
+    };
+  }) ?? [];
 
   const getBarColor = (val: number) => val >= 70 ? "#22c55e" : val >= 55 ? "#f59e0b" : "#ef4444";
 

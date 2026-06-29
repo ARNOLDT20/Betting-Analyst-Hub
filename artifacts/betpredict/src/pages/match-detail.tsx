@@ -238,7 +238,8 @@ export default function MatchDetailPage() {
 }
 
 function TeamAnalysisCard({ teamName, prediction, isHome }: { teamName: string; prediction: { winProbability: number; form: string; recentGoalsScored: number; recentGoalsConceded: number; homeAwayRecord: string }; isHome: boolean }) {
-  const formChars = prediction.form.split("").slice(0, 5);
+  const form = prediction.form ?? "";
+  const formChars = form.split("").slice(0, 5);
   return (
     <Card className="bg-card border-card-border" data-testid={`team-analysis-${isHome ? "home" : "away"}`}>
       <CardHeader className="pb-2">

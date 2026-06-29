@@ -20,6 +20,10 @@ export default function Dashboard() {
   const { data: hotGames, isLoading: hotLoading } = useGetHotGames({ limit: 4 });
   const { data: matchData, isLoading: matchesLoading } = useListMatches({ limit: 6, status: "upcoming" });
 
+  const selections = botd?.selections ?? [];
+  const hotGamesList = hotGames ?? [];
+  const upcomingMatches = matchData?.matches ?? [];
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-1">
@@ -75,7 +79,7 @@ export default function Dashboard() {
                     <p className="text-2xl font-bold text-white">{formatPercent(botd.averageConfidence, 0)}</p>
                   </div>
                 </div>
-                {botd.selections.slice(0, 3).map((s, i) => (
+                {selections.slice(0, 3).map((s, i) => (
                   <div key={i} className="flex items-center justify-between p-2 rounded bg-background/50 border border-border">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white truncate">{s.homeTeam} vs {s.awayTeam}</p>
@@ -92,8 +96,8 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
-                {botd.selections.length > 3 && (
-                  <p className="text-xs text-muted-foreground text-center">+{botd.selections.length - 3} more selections</p>
+                {selections.length > 3 && (
+                  <p className="text-xs text-muted-foreground text-center">+{selections.length - 3} more selections</p>
                 )}
               </div>
             ) : (
@@ -125,9 +129,9 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-14 w-full bg-muted" />)}
               </div>
-            ) : hotGames && hotGames.length > 0 ? (
+            ) : hotGamesList.length > 0 ? (
               <div className="space-y-2">
-                {hotGames.map((m) => (
+                {hotGamesList.map((m) => (
                   <Link key={m.id} href={`/matches/${m.id}`}>
                     <div className="flex items-center justify-between p-2.5 rounded-lg bg-accent/5 border border-accent/20 hover:border-accent/40 cursor-pointer transition-colors" data-testid={`hot-game-${m.id}`}>
                       <div className="min-w-0">
@@ -171,7 +175,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
-            {matchData?.matches.map(m => (
+            {upcomingMatches.map(m => (
               <MatchCard key={m.id} match={m} />
             ))}
           </div>
