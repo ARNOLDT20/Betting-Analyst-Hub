@@ -1,0 +1,24 @@
+# Render Blueprint for the BetPredict Express API (artifacts/api-server).
+# The frontend stays on Vercel and points at this service via VITE_API_URL.
+#
+# After first deploy, set these in the Render dashboard (Environment):
+#   DATABASE_URL            -> your Neon Postgres connection string
+#   FOOTBALL_DATA_API_KEY   -> ddf6a27c08cf459bbf7b8d1c7c2cf919
+#
+# Render injects PORT automatically (src/index.ts reads it).
+services:
+  - type: web
+    name: betpredict-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: corepack enable && corepack pnpm install --no-frozen-lockfile && corepack pnpm --filter @workspace/api-server build
+    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: FOOTBALL_DATA_API_KEY
+        sync: false

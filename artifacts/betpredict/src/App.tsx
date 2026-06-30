@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
+import { ErrorBoundary } from "@/components/error-boundary";
 import Dashboard from "@/pages/dashboard";
 import MatchesPage from "@/pages/matches";
 import MatchDetailPage from "@/pages/match-detail";
@@ -24,16 +25,18 @@ const queryClient = new QueryClient({
 function Router() {
   return (
     <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/matches" component={MatchesPage} />
-        <Route path="/matches/:id" component={MatchDetailPage} />
-        <Route path="/hot" component={HotPage} />
-        <Route path="/bet-of-the-day" component={BetOfTheDayPage} />
-        <Route path="/bet-builder" component={BetBuilderPage} />
-        <Route path="/predictions" component={PredictionsPage} />
-        <Route component={NotFound} />
-      </Switch>
+      <ErrorBoundary>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/matches" component={MatchesPage} />
+          <Route path="/matches/:id" component={MatchDetailPage} />
+          <Route path="/hot" component={HotPage} />
+          <Route path="/bet-of-the-day" component={BetOfTheDayPage} />
+          <Route path="/bet-builder" component={BetBuilderPage} />
+          <Route path="/predictions" component={PredictionsPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </ErrorBoundary>
     </Layout>
   );
 }
