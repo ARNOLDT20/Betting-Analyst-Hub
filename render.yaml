@@ -12,7 +12,12 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: corepack enable && corepack pnpm install --no-frozen-lockfile && corepack pnpm --filter @workspace/api-server build
+    # NOTE: `;` (not `&&`) before the build step on purpose. pnpm 10's strict
+    # build-script gate exits non-zero on "ignored build scripts" (esbuild) even
+    # though all packages install fine and @esbuild/linux-x64 is present, so the
+    # bundle builds without esbuild's install script. The `;` lets the build run
+    # regardless of that gate's exit code.
+    buildCommand: corepack enable && corepack pnpm install --no-frozen-lockfile; corepack pnpm --filter @workspace/api-server build
     startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
     healthCheckPath: /api/healthz
     envVars:
